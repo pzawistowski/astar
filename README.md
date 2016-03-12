@@ -1,4 +1,5 @@
 # astar 
+[![Travis-CI Build Status](https://travis-ci.org/pzawistowski/astar.svg?branch=master)](https://travis-ci.org/pzawistowski/astar)
 
 A* algorithm implementation.
 
