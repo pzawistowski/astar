@@ -7,7 +7,7 @@
 #' @param start initial node in the search space
 #' @param goal final node in the search space
 #' @param params a list containing functions necessary to define the search space
-#' @param max.iters maximum number of iterations to run - for debuggin purposes only, defaults to Inf
+#' @param max.iters maximum number of iterations to run - for debuggin purposes only, defaults to \code{Inf}
 #' @return A list containing two components \code{solution} and \code{history}.
 #' @examples
 #'
