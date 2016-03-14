@@ -59,3 +59,72 @@ test_that("handles complex values", {
   expect_equal(pq$pop(), list(1,2,3))
   expect_equal(pq$pop(), 1)
 })
+
+test_that("supports finding elements", {
+  pq <- NaivePriorityQueue$new()
+
+  pq$push(list(n='A',idx=1),1)
+  pq$push(list(n='B',idx=1),2)
+  pq$push(list(n='C',idx=1),3)
+
+  filter <- function(el) el$n == 'B'
+
+  expect_equal(pq$find(filter), 2)
+})
+
+
+
+test_that("supports finding elements - multidimensional case", {
+  pq <- NaivePriorityQueue$new()
+
+  pq$push(c(1,0), 1)
+  pq$push(c(0,1),2)
+  pq$push(c(1,1),3)
+
+  filter <- function(el) identical(el, c(0,1))
+
+  expect_equal(pq$find(filter), 2)
+})
+
+
+test_that("return NA is element is not found", {
+  pq <- NaivePriorityQueue$new()
+
+  filter <- function(el) el == 'B'
+
+  expect_equal(pq$find(filter), NA)
+
+})
+
+
+
+test_that("supports getting elements", {
+  pq <- NaivePriorityQueue$new()
+
+  pq$push('A',10)
+  pq$push('B',20)
+  pq$push('C',30)
+
+
+  expect_equal(pq$get(3), 'C')
+  expect_equal(pq$getValue(3), 30)
+
+})
+
+
+
+test_that("supports removing elements", {
+  pq <- NaivePriorityQueue$new()
+
+  pq$push('A',10)
+  pq$push('B',20)
+  pq$push('C',30)
+
+  pq$remove(2)
+  expect_equal(pq$get(2), 'C')
+  expect_equal(pq$getValue(2), 30)
+
+  pq$remove(1)
+  expect_equal(pq$get(1), 'C')
+  expect_equal(pq$getValue(1), 30)
+})

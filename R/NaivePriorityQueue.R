@@ -20,6 +20,19 @@ NaivePriorityQueue <- R6::R6Class(
         element
       }else
         NA
+    },
+    length = function() length(private$elements),
+    find = function(filter) {
+      found <- sapply(private$elements, filter)
+      res <- if(length(found) > 0) which(found) else c()
+      if(length(res) > 0) res[[1]] else NA
+    },
+
+    get = function(idx) private$elements[[idx]],
+    getValue = function(idx) private$values[[idx]],
+    remove = function(idx) {
+      private$elements[[idx]] <- NULL
+      private$values[[idx]] <- NULL
     }
   ),
   private = list(

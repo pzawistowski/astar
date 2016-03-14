@@ -24,45 +24,62 @@
 #'
 #' @export
 astar <- function(start, goal, params, max.iters = Inf){
+  visitedNodes <- list()
   history <- list()
-  parents <- list()
   it <- 0
 
   backtrack <- function(el) {
     if(is.na(el$parent)){
       list()
     }else{
-      parent <- parents[[el$parent]]
-      append(backtrack(parent),list(parent$el))
+      parent <- history[[el$parent]]
+      append(backtrack(parent),list(parent$node))
     }
   }
 
-  stopCriterion <- function(A, history){
+  stopCriterion <- function(A){
     it <<- it + 1
-    length(A) == 0 || list(goal) %in% tail(history,1) || it > max.iters
+    A$length() == 0 || list(goal) %in% tail(visitedNodes,1) || it > max.iters
+  }
+
+  updateHistory <- function(el){
+    visitedNodes <<- append(visitedNodes, list(el$node))
+    history <<- append(history, list(el))
   }
 
   with(params,
    {
-
-    evaluate <- function(el,sol) heuristic(el,goal) + distance(el,sol)
-
      A <- NaivePriorityQueue$new()
-     A$push(list(el=start, parent=NA), evaluate(start, list()) )
+     h <- heuristic(start,goal)
+     A$push(list(node=start, parent=NA, distance=0),h)
 
-     while(!stopCriterion(A, history)){
+     while(!stopCriterion(A)){
         curr <- A$pop()
-        history <<- append(history, list(curr$el))
-        parents <<- append(parents, list(curr))
+        updateHistory(curr)
 
-        sol <- c(backtrack(curr), curr)
-        for(n in setdiff(neighbours(curr$el), history))  A$push(list(el=n,parent=it), evaluate(n, sol))
+        for(n in setdiff(neighbours(curr$node), visitedNodes)){
+          d <- distance(n,curr$node, curr$distance)
+          h <- heuristic(n,goal)
+          filter <- function(el) identical(el$node, n)
+          prev <- A$find(filter)
+
+          if(is.na(prev)){
+            A$push(list(node=n,parent=it, distance=d), h+d)
+          }else{
+             other <- A$get(prev)
+             if(other$distance>d){
+               A$remove(prev)
+               A$push(list(node=n,parent=it, distance=d), h+d)
+             }
+          }
+        }
      }
    })
 
-  last <- tail(parents,1)[[1]]
+  last <- history[[it-1]]
   list(
-    solution=append(backtrack(last),list(last$el)),
+    solution=append(backtrack(last),list(last$node)),
+    solution.cost = last$distance,
     history=history
   )
 }
