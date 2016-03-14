@@ -13,7 +13,7 @@ astar(start, goal, params, max.iters = Inf)
 
 \item{params}{a list containing functions necessary to define the search space}
 
-\item{max.iters}{maximum number of iterations to run - for debuggin purposes only, defaults to Inf}
+\item{max.iters}{maximum number of iterations to run - for debuggin purposes only, defaults to \code{Inf}}
 }
 \value{
 A list containing two components \code{solution} and \code{history}.
@@ -28,7 +28,7 @@ The search space is defined by a list passed thorugh params.
 dirs <- list(c(1,0),c(0,1),c(0,-1),c(-1,0))
 params <- list(
  heuristic = function(el, goal) sum((goal-el)^2),
- distance = function(el, partialSolution) length(partialSolution),
+ distance = function(el, parent, parentDistance) parentDistance + 1,
  neighbours = function(el) setdiff(lapply(dirs, function(d) el+d), list(c(0,2), c(1,1), c(-1,1)))
  )
 

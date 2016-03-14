@@ -16,7 +16,7 @@
 #' dirs <- list(c(1,0),c(0,1),c(0,-1),c(-1,0))
 #' params <- list(
 #'  heuristic = function(el, goal) sum((goal-el)^2),
-#'  distance = function(el, partialSolution) length(partialSolution),
+#'  distance = function(el, parent, parentDistance) parentDistance + 1,
 #'  neighbours = function(el) setdiff(lapply(dirs, function(d) el+d), list(c(0,2), c(1,1), c(-1,1)))
 #'  )
 #'
