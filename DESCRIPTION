@@ -1,13 +1,14 @@
 Package: astar
 Type: Package
 Title: Basic A* search algorithm
-Version: 0.1
-Date: 2016-03-12
+Version: 0.2
+Date: 2016-03-15
 Author: Pawel Zawistowski
 Maintainer: <dratewka@gmail.com>
 Description: A* algorithm implementation for learning purposes.
 License: GPL 2.0
 LazyData: TRUE
+Imports: fastmatch, R6
 Suggests:
     testthat,
     roxygen2,

@@ -24,7 +24,7 @@
 #'
 #' @export
 astar <- function(start, goal, params, max.iters = Inf){
-  visitedNodes <- list()
+  visitedNodes <- VisitedNodesSet$new(50)
   history <- list()
   it <- 0
 
@@ -39,37 +39,38 @@ astar <- function(start, goal, params, max.iters = Inf){
 
   stopCriterion <- function(A){
     it <<- it + 1
-    A$length() == 0 || list(goal) %in% tail(visitedNodes,1) || it > max.iters
+    A$length() == 0 || identical(goal, visitedNodes$last()) || it > max.iters
   }
 
   updateHistory <- function(el){
-    visitedNodes <<- append(visitedNodes, list(el$node))
+    visitedNodes$add(el$node)
     history <<- append(history, list(el))
   }
+
 
   with(params,
    {
      A <- NaivePriorityQueue$new()
      h <- heuristic(start,goal)
-     A$push(list(node=start, parent=NA, distance=0),h)
+     A$push(list(node=start, parent=NA, distance=0, heuristic=h),h)
 
      while(!stopCriterion(A)){
         curr <- A$pop()
         updateHistory(curr)
 
-        for(n in setdiff(neighbours(curr$node), visitedNodes)){
+        for(n in visitedNodes$filterNeighbours(neighbours(curr$node))){
           d <- distance(n,curr$node, curr$distance)
           h <- heuristic(n,goal)
           filter <- function(el) identical(el$node, n)
           prev <- A$find(filter)
 
           if(is.na(prev)){
-            A$push(list(node=n,parent=it, distance=d), h+d)
+            A$push(list(node=n,parent=it, distance=d, heuristic=h), h+d)
           }else{
              other <- A$get(prev)
              if(other$distance>d){
                A$remove(prev)
-               A$push(list(node=n,parent=it, distance=d), h+d)
+               A$push(list(node=n,parent=it, distance=d, heuristic=h), h+d)
              }
           }
         }
