@@ -5,7 +5,7 @@
 #' The search space is defined by a list passed thorugh params.
 #'
 #' @param start initial node in the search space
-#' @param goal final node in the search space
+#' @param goal final node in the search space or a function testing whether the given node is final
 #' @param params a list containing functions necessary to define the search space
 #' @param max.iters maximum number of iterations to run - for debuggin purposes only, defaults to \code{Inf}
 #' @return A list containing two components \code{solution} and \code{history}.
@@ -28,6 +28,12 @@ astar <- function(start, goal, params, max.iters = Inf){
   history <- list()
   it <- 0
 
+  if(!is.function(goal)){
+    goal.fun <- function(node) identical(node, goal)
+  }else{
+    goal.fun <- goal
+  }
+
   backtrack <- function(el) {
     if(is.na(el$parent)){
       list()
@@ -39,7 +45,7 @@ astar <- function(start, goal, params, max.iters = Inf){
 
   stopCriterion <- function(A){
     it <<- it + 1
-    A$length() == 0 || identical(goal, visitedNodes$last()) || it > max.iters
+    A$length() == 0 || goal.fun(visitedNodes$last()) || it > max.iters
   }
 
   updateHistory <- function(el){
@@ -51,7 +57,7 @@ astar <- function(start, goal, params, max.iters = Inf){
   with(params,
    {
      A <- NaivePriorityQueue$new()
-     h <- heuristic(start,goal)
+     h <- heuristic(start, goal)
      A$push(list(node=start, parent=NA, distance=0, heuristic=h),h)
 
      while(!stopCriterion(A)){

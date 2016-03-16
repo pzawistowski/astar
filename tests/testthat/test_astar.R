@@ -88,5 +88,19 @@ test_that("astar handles multiple paths to the same node", {
   expect_equal(res$solution.cost, 9)
 })
 
+test_that("astar is't possible to define the goal node as a feasibility function", {
+  params <- list(
+    heuristic = function(el, goal) (10 - el)^2,
+    distance = function(el, parent, parentDistance) el^2,
+    neighbours = function(el) list(el + 1, el - 1)
+  )
+  goal <- function(node) identical(node, 10)
+
+  res <- astar(0, goal, params)
+
+  expect_equal(res$solution, as.list(0:10))
+})
+
+
 
 
