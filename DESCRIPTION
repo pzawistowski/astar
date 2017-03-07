@@ -6,11 +6,10 @@ Date: 2016-03-15
 Author: Pawel Zawistowski
 Maintainer: <dratewka@gmail.com>
 Description: A* algorithm implementation for learning purposes.
-License: GPL 2.0
+License: GPL-2
 LazyData: TRUE
 Imports: fastmatch, R6
 Suggests:
     testthat,
-    roxygen2,
-    R6
-RoxygenNote: 5.0.1
+    roxygen2
+RoxygenNote: 6.0.1

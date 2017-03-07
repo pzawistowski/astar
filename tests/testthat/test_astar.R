@@ -93,17 +93,23 @@ test_that("astar handles multiple paths to the same node", {
   expect_equal(res$solution.cost, 9)
 })
 
-test_that("astar is't possible to define the goal node as a feasibility function", {
+test_that("is't possible to pass arbitrary parameters to user defined functions", {
+  got_foo <- NA
+  got_bar <- NA
+  got_both <- NA
+  
   params <- list(
-    heuristic = function(el) (10 - el)^2,
-    distance = function(el, parent, parentDistance) el^2,
-    neighbours = function(el) list(el + 1, el - 1),
-    is_feasible = function(node){ identical(node, 10) }
+    heuristic = function(el, foo, ...) {got_foo <<- foo; (10 - el)^2},
+    distance = function(el, parent, parentDistance, bar, ...) {got_bar <<- bar; el^2},
+    neighbours = function(el, foo, bar) {got_both <<- foo + bar; list(el + 1, el - 1)},
+    is_feasible = function(node, foo, bar){ identical(node, 10) }
   )
   
-  res <- astar(0, params)
+  astar(0, params, foo = 1, bar = 2)
 
-  expect_equal(res$solution, as.list(0:10))
+  expect_equal(got_foo, 1)
+  expect_equal(got_bar, 2)
+  expect_equal(got_both, 3)
 })
 
 
