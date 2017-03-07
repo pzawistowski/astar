@@ -3,11 +3,12 @@ context("astar")
 test_that("astar is able to find an integer route from 0 to 10", {
   params <- list(
     heuristic = function(el, goal) (goal - el)^2,
-    distance = function(el, parent, parentDistance) el^2,
-    neighbours = function(el) list(el + 1, el - 1)
+    distance = function(el, parent, parentDistance, goal) el^2,
+    neighbours = function(el, goal) list(el + 1, el - 1),
+    is_feasible = function(node, goal){identical(node, goal) }
   )
 
-  res <- astar(0, 10, params)
+  res <- astar(0, params, goal = 10)
 
   expect_equal(res$solution, as.list(0:10))
 })
@@ -19,11 +20,12 @@ test_that("astar is able to find an integer route from (0,0) to (0,3) despite a 
 
   params <- list(
     heuristic = function(el, goal) sum((goal-el)^2),
-    distance = function(el, parent, parentDistance) parentDistance + 1,
-    neighbours = function(el) setdiff(lapply(dirs, function(d) el+d), list(c(0,2)))
+    distance = function(el, parent, parentDistance, goal) parentDistance + 1,
+    neighbours = function(el, goal) setdiff(lapply(dirs, function(d) el+d), list(c(0,2))),
+    is_feasible = function(node, goal){ identical(node, goal) }
   )
 
-  res <- astar(c(0,0), c(0,3), params)
+  res <- astar(c(0,0), params, goal=c(0,3))
   expect_equal(tail(res$solution,1), list(c(0,3)))
   expect_equal(length(res$solution), 6)
 })
@@ -35,11 +37,12 @@ test_that("astar is able to backtrack", {
 
   params <- list(
     heuristic = function(el, goal) sum((goal-el)^2),
-    distance = function(el, parent, parentDistance) parentDistance + 1,
-    neighbours = function(el) setdiff(lapply(dirs, function(d) el+d), list(c(0,2), c(1,1), c(-1,1)))
+    distance = function(el, parent, parentDistance, goal) parentDistance + 1,
+    neighbours = function(el, goal) setdiff(lapply(dirs, function(d) el+d), list(c(0,2), c(1,1), c(-1,1))),
+    is_feasible = function(node, goal){ identical(node, goal) }
   )
 
-  res <- astar(c(0,0), c(0,3), params)
+  res <- astar(c(0,0), params, goal=c(0,3))
   with(res,{
     expect_equal(tail(solution,1), list(c(0,3)))
     expect_equal(length(solution), 8)
@@ -54,15 +57,16 @@ test_that("astar is able to solve a 100D problem", {
   n <- 100
   params <- list(
     heuristic = function(el, goal) sum((goal - el)^2),
-    distance = function(el, parent, parentDistance) parentDistance + 1,
-    neighbours = function(el) {
+    distance = function(el, parent, parentDistance, goal) parentDistance + 1,
+    neighbours = function(el, goal) {
       v <- function(i) {zeros <- rep(0, n); zeros[[i]] <- 1}
       dims <- as.list(1:n)
       c(lapply(dims, function(i){ el + v(i)}), lapply(dims, function(i){el - v(i)}))
-    }
+    },
+    is_feasible = function(node, goal){ identical(node, goal) }
   )
 
-  res <- astar(rep(0,n), rep(10,n), params)
+  res <- astar(rep(0,n), params, goal = rep(10,n))
 
   expect_equal(tail(res$solution,1), list(rep(10,n)))
 })
@@ -75,14 +79,15 @@ test_that("astar handles multiple paths to the same node", {
                           Inf, Inf, 4, 0))
   params <- list(
     heuristic = function(el, goal) 5*(goal - el),
-    distance = function(el, parent, parentDist) parentDist + dist[[parent, el]],
-    neighbours = function(el) {
+    distance = function(el, parent, parentDist, goal) parentDist + dist[[parent, el]],
+    neighbours = function(el, goal) {
       row <- dist[el,]
       as.list(which(row > 0 & row < Inf))
-    }
+    },
+    is_feasible = function(node, goal){ identical(node,goal)}
   )
 
-  res <- astar(1, 4, params)
+  res <- astar(1, params, goal = 4)
 
   expect_equal(res$solution, as.list(1:4))
   expect_equal(res$solution.cost, 9)
@@ -90,13 +95,13 @@ test_that("astar handles multiple paths to the same node", {
 
 test_that("astar is't possible to define the goal node as a feasibility function", {
   params <- list(
-    heuristic = function(el, goal) (10 - el)^2,
+    heuristic = function(el) (10 - el)^2,
     distance = function(el, parent, parentDistance) el^2,
-    neighbours = function(el) list(el + 1, el - 1)
+    neighbours = function(el) list(el + 1, el - 1),
+    is_feasible = function(node){ identical(node, 10) }
   )
-  goal <- function(node) identical(node, 10)
-
-  res <- astar(0, goal, params)
+  
+  res <- astar(0, params)
 
   expect_equal(res$solution, as.list(0:10))
 })

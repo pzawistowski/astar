@@ -5,8 +5,7 @@
 #' The search space is defined by a list passed thorugh params.
 #'
 #' @param start initial node in the search space
-#' @param goal final node in the search space or a function testing whether the given node is final
-#' @param params a list containing functions necessary to define the search space
+#' @param params a list containing functions necessary to define the search problem
 #' @param max.iters maximum number of iterations to run - for debuggin purposes only, defaults to \code{Inf}
 #' @return A list containing two components \code{solution} and \code{history}.
 #' @examples
@@ -17,22 +16,18 @@
 #' params <- list(
 #'  heuristic = function(el, goal) sum((goal-el)^2),
 #'  distance = function(el, parent, parentDistance) parentDistance + 1,
-#'  neighbours = function(el) setdiff(lapply(dirs, function(d) el+d), list(c(0,2), c(1,1), c(-1,1)))
+#'  neighbours = function(el) setdiff(lapply(dirs, function(d) el+d), list(c(0,2), c(1,1), c(-1,1))),
+#'  is_feasible = function(node){ identical(node, c(0,3)) }
 #'  )
 #'
-#'  res <- astar(c(0,0), c(0,3), params)
+#'  res <- astar(c(0,0), params)
 #'
 #' @export
-astar <- function(start, goal, params, max.iters = Inf){
+astar <- function(start, params, max.iters = Inf, ...){
+  
   visitedNodes <- VisitedNodesSet$new(50)
   history <- list()
   it <- 0
-
-  if(!is.function(goal)){
-    goal.fun <- function(node) identical(node, goal)
-  }else{
-    goal.fun <- goal
-  }
 
   backtrack <- function(el) {
     if(is.na(el$parent)){
@@ -43,21 +38,20 @@ astar <- function(start, goal, params, max.iters = Inf){
     }
   }
 
-  stopCriterion <- function(A){
-    it <<- it + 1
-    A$length() == 0 || goal.fun(visitedNodes$last()) || it > max.iters
-  }
-
   updateHistory <- function(el){
     visitedNodes$add(el$node)
     history <<- append(history, list(el))
   }
 
-
+  stopCriterion <- function(A){
+    it <<- it + 1
+    A$length() == 0 || params$is_feasible(visitedNodes$last(),...) || it > max.iters
+  }
+  
   with(params,
    {
      A <- NaivePriorityQueue$new()
-     h <- heuristic(start, goal)
+     h <- heuristic(start, ...)
      A$push(list(node=start, parent=NA, distance=0, heuristic=h),h)
 
      while(!stopCriterion(A)){
@@ -65,8 +59,8 @@ astar <- function(start, goal, params, max.iters = Inf){
         updateHistory(curr)
 
         for(n in visitedNodes$filterNeighbours(neighbours(curr$node))){
-          d <- distance(n,curr$node, curr$distance)
-          h <- heuristic(n,goal)
+          d <- distance(n,curr$node, curr$distance, ...)
+          h <- heuristic(n, ...)
           filter <- function(el) identical(el$node, n)
           prev <- A$find(filter)
 
