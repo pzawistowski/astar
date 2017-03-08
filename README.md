@@ -54,7 +54,7 @@ parameter which the algorithm passes to each of the functions defined in `params
 params <- list(
   # A very simple heuristic function - solving complicated cases may take a long time
   heuristic = function(node, goal){ # Note that we're passing an additional parameter `goal` here
-    cost <- sapply(1:15, function(v){
+    cost <- sapply(1:16, function(v){
       expected <- which(goal==v, arr.ind=T)
       actual <- which(node==v, arr.ind=T)
       sum(abs(expected-actual))
