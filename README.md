@@ -54,21 +54,16 @@ parameter which the algorithm passes to each of the functions defined in `params
 params <- list(
   # A very simple heuristic function - solving complicated cases may take a long time
   heuristic = function(node, goal){ # Note that we're passing an additional parameter `goal` here
-    cost <- sapply(1:16, function(v){
-      expected <- which(goal==v, arr.ind=T)
-      actual <- which(node==v, arr.ind=T)
-      sum(abs(expected-actual))
-    })
-
-    sum(cost)
+    mask <- (goal != 0) # we're only interested in positions of tiles, not the empty place
+    sum((node != goal) & mask)
   },
-
+ 
   # The distance function just counts the number of moves already made
   distance = function(node, parent, parentDistance, ...) parentDistance+1, # `...` basically says that we're ignoring the additional `goal` parameter
 
   # Neighbourhood function generates the moves feasible from a given board configuration
   neighbours = function(node, ...){ # `...` - same as above
-    rc <- which(is.na(node), arr.ind = T)
+    rc <- which(node==0, arr.ind = T)
     row <- rc[[1]]
     col <- rc[[2]]
 
@@ -76,7 +71,7 @@ params <- list(
     addMove <- function(otherRow, otherCol){
       n <- node
       n[[row,col]] <- n[[otherRow,otherCol]]
-      n[[otherRow,otherCol]] <- NA
+      n[[otherRow,otherCol]] <- 0
       res <<- append(res, list(n))
     }
 
@@ -91,16 +86,16 @@ params <- list(
 )
 
 # Initial game state is depicted by the following matrix
-start <- matrix(c( 1, 2, 3, 4,
-                   5, 6, NA, 7,
-                   9,10,11,8,
+start <- matrix(c(  1, 2, 3, 4,
+                    5, 6, 0, 7,
+                    9,10,11, 8,
                    13,14,15,12 ), nrow=4, byrow=T)
 
 # Our goal - the board state after solving the puzzle
 goalNode <- matrix(c( 1, 2, 3, 4,
-                  5, 6, 7, 8,
-                  9,10,11,12,
-                 13,14,15,NA ),nrow=4,byrow=T)
+                      5, 6, 7, 8,
+                      9,10,11,12,
+                     13,14,15, 0 ),nrow=4,byrow=T)
 
 res <- astar::astar(start, params, goal = goalNode) # here we're setting the value for `goal` 
 
