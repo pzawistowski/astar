@@ -47,7 +47,7 @@ astar <- function(start, params, max.iters = Inf, ...){
 
   stopCriterion <- function(A){
     it <<- it + 1
-    A$length() == 0 || params$is_feasible(visitedNodes$last(),...) || it > max.iters
+    A$length() == 0 || (visitedNodes$count() > 0 && params$is_feasible(visitedNodes$last(),...)) || it > max.iters
   }
   
   with(params,

@@ -114,4 +114,32 @@ test_that("is't possible to pass arbitrary parameters to user defined functions"
 
 
 
+test_that("there is no NA call to feasibility function during the first iteration", {
+  
+  params <- list(
+    heuristic = function(node, ctx){
+      len <- length(node)
+      sum((node[1:(len-1)]-node[2:len])>0)
+    },
+    distance = function(node, parent, parentDistance, ...) parentDistance + 1,
+    
+    neighbours = function(node, ...){
+      moves <- combn(length(node),2)
+      lapply(1:ncol(moves), function(i){
+        neighbour <- node
+        neighbour[[moves[[1,i]] ]] <- node[[moves[[2,i]] ]]
+        neighbour[[moves[[2,i]] ]] <- node[[moves[[1,i]] ]]
+        neighbour
+      })
+    },
+    is_feasible = function(node, ...) params$heuristic(node,NULL) == 0
+  )
+  
+  start <- c(2,1,3,5,4) 
+  
+  res = astar::astar(start, params)
+  expect_equal(tail(res$solution,1)[[1]], 1:5)
+})
+
+
 

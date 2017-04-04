@@ -30,6 +30,10 @@ VisitedNodesSet <- R6::R6Class(
 
     last = function(){
       private$lastNode
+    },
+    
+    count = function(){
+      private$counter  
     }
   ),
   private = list(
